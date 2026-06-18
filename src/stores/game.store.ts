@@ -53,17 +53,25 @@ export const useGameStore = defineStore('game', () => {
     const isCorrect = pickedId === currentQuestion.value.id
     lastResult.value = { correct: isCorrect, pickedId }
 
-    if (isCorrect) {
-      score.value++
-    } else {
-      wrongCount.value++
-    }
+    // 检查是否已答过此题（再听一次后重答）
+    const existingIdx = history.value.findIndex(
+      (h) => h.questionId === currentQuestion.value!.id
+    )
 
-    history.value.push({
-      questionId: currentQuestion.value.id,
-      pickedId,
-      isCorrect,
-    })
+    if (existingIdx === -1) {
+      // 第一次答题：正常计分
+      if (isCorrect) {
+        score.value++
+      } else {
+        wrongCount.value++
+      }
+      history.value.push({
+        questionId: currentQuestion.value.id,
+        pickedId,
+        isCorrect,
+      })
+    }
+    // 再听一次后重答：不重复计分，只更新反馈
 
     phase.value = 'FEEDBACK'
     return isCorrect

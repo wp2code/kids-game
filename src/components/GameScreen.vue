@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useGameStore } from '@/stores/game.store'
 import { useGameEngine } from '@/composables/useGameEngine'
 import { useAudio } from '@/composables/useAudio'
@@ -28,6 +28,12 @@ const answered = ref(false)
 onMounted(() => {
   engine.startGame()
   setTimeout(() => audio.play(), 500)
+})
+
+// 离开答题界面 → 停止声音
+onUnmounted(() => {
+  audio.stopAll()
+  speech.cancel()
 })
 
 // 监听 phase 变化（来自 answer action）
@@ -61,6 +67,9 @@ function handleFeedback() {
   const result = store.lastResult
   if (!result) return
 
+  // 停止题目声音播放
+  audio.stopAll()
+
   feedbackCorrect.value = result.correct
   if (result.correct) {
     playCorrect()
@@ -81,7 +90,9 @@ function handleNext() {
   resultState.value = {}
 
   if (store.isLastRound) {
-    // 最后一题 → 进入结果页
+    // 最后一题 → 停止声音 → 进入结果页
+    audio.stopAll()
+    speech.cancel()
     engine.goNext()
   } else {
     engine.goNext()
@@ -91,10 +102,18 @@ function handleNext() {
 }
 
 function handleReplay() {
+  // 关闭弹窗，重置答题状态，允许重新选择
+  feedbackShow.value = false
+  answered.value = false
+  resultState.value = {}
+  // phase 改回 PLAYING，使重新答题时 watch 能触发 FEEDBACK
+  store.phase = 'PLAYING'
   audio.replay()
 }
 
 function handleBack() {
+  audio.stopAll()
+  speech.cancel()
   engine.goHome()
 }
 

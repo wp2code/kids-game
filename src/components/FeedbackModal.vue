@@ -80,7 +80,7 @@ const emoji = computed(() => props.isCorrect ? '🎉' : '😊')
             <BaseButton
               v-if="!isCorrect"
               variant="ghost"
-              @click="showContent = false; $emit('replay')"
+              @click="showContent = false; emit('replay')"
             >
               🔄 再听一次
             </BaseButton>

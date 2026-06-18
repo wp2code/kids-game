@@ -4,7 +4,7 @@
 
 import { ref } from 'vue'
 import { useGameStore } from '@/stores/game.store'
-import { playAudio, stopAll, setMuted as setPlayerMuted } from '@/services/audio-player'
+import { playAudio, stopAll as stopAllPlayer, setMuted } from '@/services/audio-player'
 import { getSoundUrl, getSynthPreset } from '@/services/sound-source.service'
 
 export function useAudio() {
@@ -28,20 +28,27 @@ export function useAudio() {
 
   /** 重播 */
   function replay() {
-    stopAll()
+    stopAllPlayer()
     play()
+  }
+
+  /** 停止所有声音 */
+  function stopAll() {
+    stopAllPlayer()
+    isPlaying.value = false
   }
 
   /** 切换静音 */
   function toggleMute() {
     store.toggleMute()
-    setPlayerMuted(store.muted)
+    setMuted(store.muted)
   }
 
   return {
     isPlaying,
     play,
     replay,
+    stopAll,
     toggleMute,
   }
 }
