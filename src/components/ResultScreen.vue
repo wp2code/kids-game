@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game.store'
 import { useGameEngine } from '@/composables/useGameEngine'
+import { stopAll as stopAllAudio } from '@/services/audio-player'
 import BaseButton from '@/components/common/BaseButton.vue'
 import Confetti from '@/components/common/Confetti.vue'
 
@@ -18,8 +19,10 @@ function handleHome() {
 
 const confetti = ref<InstanceType<typeof Confetti>>()
 
+const totalPoints = computed(() => store.totalRounds * 10)
+
 const stars = computed(() => {
-  const ratio = store.totalRounds > 0 ? store.score / store.totalRounds : 0
+  const ratio = totalPoints.value > 0 ? store.score / totalPoints.value : 0
   if (ratio >= 1) return 3
   if (ratio >= 0.6) return 2
   if (ratio > 0) return 1
@@ -27,7 +30,7 @@ const stars = computed(() => {
 })
 
 const encouragement = computed(() => {
-  const ratio = store.totalRounds > 0 ? store.score / store.totalRounds : 0
+  const ratio = totalPoints.value > 0 ? store.score / totalPoints.value : 0
   if (ratio >= 1) return '太厉害了！全部答对！你是听力小冠军！🏆'
   if (ratio >= 0.8) return '非常棒！你几乎全对啦！👏'
   if (ratio >= 0.6) return '做得不错哦，继续加油！💪'
@@ -36,6 +39,10 @@ const encouragement = computed(() => {
 })
 
 onMounted(() => {
+  // 停止题目声音和语音朗读
+  stopAllAudio()
+  window.speechSynthesis?.cancel()
+
   if (stars.value >= 2) {
     setTimeout(() => confetti.value?.start(), 500)
   }
@@ -64,16 +71,16 @@ onMounted(() => {
 
       <div class="stats">
         <div class="stat">
-          <span class="stat-num">{{ store.totalRounds }}</span>
-          <span class="stat-label">总题数</span>
+          <span class="stat-num">{{ store.totalRounds * 10 }}</span>
+          <span class="stat-label">总分</span>
         </div>
         <div class="stat correct">
           <span class="stat-num">{{ store.score }}</span>
-          <span class="stat-label">答对 ✅</span>
+          <span class="stat-label">答对分 ✅</span>
         </div>
         <div class="stat wrong">
           <span class="stat-num">{{ store.wrongCount }}</span>
-          <span class="stat-label">答错 ❌</span>
+          <span class="stat-label">答错分 ❌</span>
         </div>
       </div>
 

@@ -7,6 +7,9 @@ import type { SynthPreset } from '@/data/types'
 
 let audioCtx: AudioContext | null = null
 
+/** 所有正在播放的音频节点，用于统一停止 */
+const activeNodes: Set<OscillatorNode | AudioBufferSourceNode> = new Set()
+
 function getCtx(): AudioContext {
   if (!audioCtx) {
     audioCtx = new AudioContext()
@@ -29,6 +32,13 @@ export function playSynth(preset: SynthPreset): Promise<void> {
       const gain = ctx.createGain()
       osc.connect(gain)
       gain.connect(ctx.destination)
+
+      // 追踪节点以便统一停止
+      activeNodes.add(osc)
+      osc.onended = () => {
+        activeNodes.delete(osc)
+        resolve()
+      }
 
       // 基础频率
       osc.frequency.setValueAtTime(sweep ? freq * 0.6 : freq, ctx.currentTime)
@@ -210,8 +220,6 @@ export function playSynth(preset: SynthPreset): Promise<void> {
 
       osc.start(ctx.currentTime)
       osc.stop(ctx.currentTime + duration + 0.1)
-
-      osc.onended = () => resolve()
     } catch (e) {
       console.warn('Web Audio synthesis failed:', e)
       resolve()
@@ -236,6 +244,9 @@ function addNoise(ctx: AudioContext, dest: AudioNode, duration: number, volume: 
   noiseGain.connect(dest)
   noise.start()
   noise.stop(ctx.currentTime + duration + 0.1)
+  // 追踪噪声节点
+  activeNodes.add(noise)
+  noise.onended = () => activeNodes.delete(noise)
 }
 
 /** 添加泛音 */
@@ -250,6 +261,21 @@ function addOvertone(ctx: AudioContext, freq: number, dest: AudioNode, duration:
   gain.connect(dest)
   osc.start()
   osc.stop(ctx.currentTime + duration + 0.1)
+  // 追踪泛音节点
+  activeNodes.add(osc)
+  osc.onended = () => activeNodes.delete(osc)
+}
+
+/** 停止所有正在播放的合成声音 */
+export function stopAllSynth(): void {
+  activeNodes.forEach((node) => {
+    try {
+      node.stop()
+    } catch {
+      // 节点可能已经停止，忽略错误
+    }
+  })
+  activeNodes.clear()
 }
 
 /** 播放简短正确提示音 */

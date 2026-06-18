@@ -11,18 +11,26 @@ export const useGameStore = defineStore('game', () => {
   // ---- 状态 ----
   const phase = ref<Phase>('IDLE')
   const category = ref<CategoryId | null>(null)
-  const totalRounds = ref(5)
+  const POINTS_PER_QUESTION = 10
+  const totalRounds = ref(10)
   const currentRound = ref(0)
-  const score = ref(0)
-  const wrongCount = ref(0)
   const currentQuestion = ref<Question | null>(null)
   const currentOptions = ref<Question[]>([])
   const lastResult = ref<{ correct: boolean; pickedId: string } | null>(null)
-  const bestScore = ref(getItem<number>('best-score', 0))
+  // 兼容旧版 bestScore（旧版按题数 0-5 存储，新版按分数 0-100）
+  const _rawBest = getItem<number>('best-score', 0)
+  const bestScore = ref(_rawBest <= 5 ? _rawBest * POINTS_PER_QUESTION : _rawBest)
   const muted = ref(false)
   const history = ref<RoundRecord[]>([])
 
   // ---- 派生 ----
+  // score / wrongCount 从 history 派生，保证 score + wrongCount 始终等于 history.length * POINTS_PER_QUESTION
+  const score = computed(() =>
+    history.value.filter((h) => h.isCorrect).length * POINTS_PER_QUESTION
+  )
+  const wrongCount = computed(() =>
+    history.value.filter((h) => !h.isCorrect).length * POINTS_PER_QUESTION
+  )
   const progress = computed(() =>
     totalRounds.value > 0 ? currentRound.value / totalRounds.value : 0
   )
@@ -36,8 +44,6 @@ export const useGameStore = defineStore('game', () => {
 
   function startGame() {
     currentRound.value = 0
-    score.value = 0
-    wrongCount.value = 0
     history.value = []
     lastResult.value = null
     phase.value = 'PLAYING'
@@ -53,25 +59,25 @@ export const useGameStore = defineStore('game', () => {
     const isCorrect = pickedId === currentQuestion.value.id
     lastResult.value = { correct: isCorrect, pickedId }
 
-    // 检查是否已答过此题（再听一次后重答）
-    const existingIdx = history.value.findIndex(
-      (h) => h.questionId === currentQuestion.value!.id
-    )
+    // 用轮次索引定位，避免同一题在不同轮出现时误改上一轮记录
+    const roundIdx = currentRound.value
+    const isReplay = roundIdx < history.value.length
 
-    if (existingIdx === -1) {
-      // 第一次答题：正常计分
-      if (isCorrect) {
-        score.value++
-      } else {
-        wrongCount.value++
-      }
+    if (!isReplay) {
+      // 第一次答题：新增记录，score/wrongCount 由 computed 自动更新
       history.value.push({
         questionId: currentQuestion.value.id,
         pickedId,
         isCorrect,
       })
+    } else {
+      // 再听一次后重答：仅更新当前轮记录，不影响之前轮次
+      history.value[roundIdx] = {
+        questionId: currentQuestion.value.id,
+        pickedId,
+        isCorrect,
+      }
     }
-    // 再听一次后重答：不重复计分，只更新反馈
 
     phase.value = 'FEEDBACK'
     return isCorrect
@@ -95,8 +101,6 @@ export const useGameStore = defineStore('game', () => {
     phase.value = 'IDLE'
     category.value = null
     currentRound.value = 0
-    score.value = 0
-    wrongCount.value = 0
     currentQuestion.value = null
     currentOptions.value = []
     lastResult.value = null
