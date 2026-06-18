@@ -1,0 +1,90 @@
+/**
+ * 全局基础样式
+ */
+@import './variables.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: 18px;
+  color: var(--text-primary);
+  background: var(--bg-warm);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  /* 防止 iOS 橡皮筋效果导致误触 */
+  overscroll-behavior: none;
+}
+
+/* 所有可点击元素最小触摸区 */
+button,
+a,
+[role='button'] {
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* 图片响应式 */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 选中颜色 */
+::selection {
+  background: var(--color-accent);
+  color: var(--text-primary);
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+/* 输入框基础 */
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* 焦点可见 */
+:focus-visible {
+  outline: 3px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+/* 页面过渡 */
+#app {
+  min-height: 100vh;
+  min-height: 100dvh;
+}

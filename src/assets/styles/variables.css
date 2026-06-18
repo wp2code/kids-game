@@ -1,0 +1,57 @@
+/**
+ * CSS 变量 —— 儿童友好配色
+ */
+:root {
+  /* 主色调 */
+  --color-primary: #FF7043;
+  --color-primary-light: #FF8A65;
+  --color-primary-dark: #E64A19;
+
+  --color-secondary: #4FC3F7;
+  --color-secondary-light: #81D4FA;
+  --color-secondary-dark: #0288D1;
+
+  --color-accent: #FFD54F;
+  --color-accent-light: #FFE082;
+
+  --color-success: #66BB6A;
+  --color-danger: #EF5350;
+
+  /* 背景 */
+  --bg-warm: #FFF8E1;
+  --bg-light: #FFFFFF;
+  --bg-card: rgba(255, 255, 255, 0.8);
+
+  /* 文字 */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-hint: #999999;
+
+  /* 形状 */
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+
+  /* 阴影 */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.14);
+
+  /* 触摸 */
+  --touch-min: 64px;
+
+  /* 字体 */
+  --font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+}
+
+/* 尊重用户动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
