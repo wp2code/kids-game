@@ -24,9 +24,9 @@ const feedbackCorrect = ref(false)
 const resultState = ref<Record<string, 'correct' | 'wrong' | 'idle'>>({})
 const answered = ref(false)
 
-// 游戏开始 → 播放声音
-onMounted(() => {
-  engine.startGame()
+// 游戏开始 → 加载题库并播放声音
+onMounted(async () => {
+  await engine.startGame()
   setTimeout(() => audio.play(), 500)
 })
 
@@ -126,6 +126,12 @@ function handleToggleMute() {
   <div class="game-screen">
     <Confetti ref="confetti" :duration="3000" />
 
+    <!-- 题库加载中 -->
+    <div v-if="engine.isLoadingQuestions.value" class="game-body">
+      <div class="loading-hint">🔄 题目加载中...</div>
+    </div>
+
+    <template v-else>
     <GameHeader
       @back="handleBack"
       @toggle-mute="handleToggleMute"
@@ -155,6 +161,7 @@ function handleToggleMute() {
       @next="handleNext"
       @replay="handleReplay"
     />
+    </template>
   </div>
 </template>
 
@@ -181,5 +188,17 @@ function handleToggleMute() {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.loading-hint {
+  font-size: 28px;
+  font-weight: 700;
+  color: #999;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 </style>

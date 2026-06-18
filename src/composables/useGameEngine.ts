@@ -1,17 +1,30 @@
 /**
- * 游戏引擎 —— 核心流程编排
+ * 游戏引擎 —— 核心流程编排（支持异步题库）
  */
 
+import { ref } from 'vue'
 import { useGameStore } from '@/stores/game.store'
-import { QUESTIONS } from '@/data/questions'
+import { fetchQuestions } from '@/services/questions.service'
 import { shuffle } from '@/utils/random'
 import type { Question } from '@/data/types'
 
 export function useGameEngine() {
   const store = useGameStore()
+  const isLoadingQuestions = ref(false)
 
-  /** 开始新一局 */
-  function startGame() {
+  // 题库缓存（模块级，与 questions.service 内存缓存同源）
+  let _questions: Question[] = []
+
+  /** 开始新一局（异步：首次调用时加载题库） */
+  async function startGame() {
+    if (_questions.length === 0) {
+      isLoadingQuestions.value = true
+      try {
+        _questions = await fetchQuestions()
+      } finally {
+        isLoadingQuestions.value = false
+      }
+    }
     store.startGame()
     setupRound()
   }
@@ -22,7 +35,7 @@ export function useGameEngine() {
     if (!cat) return
 
     // 过滤同类题目
-    const pool = QUESTIONS.filter((q) => q.category === cat)
+    const pool = _questions.filter((q) => q.category === cat)
 
     // 随机选一题作为答案
     const shuffled = shuffle(pool)
@@ -35,7 +48,7 @@ export function useGameEngine() {
       distractors = restPool.slice(0, 3)
     } else {
       // 不够从全题库中补（不同类别）
-      const otherPool = QUESTIONS.filter((q) => q.id !== answer.id)
+      const otherPool = _questions.filter((q) => q.id !== answer.id)
       const others = shuffle(otherPool)
       distractors = others.slice(0, 3)
     }
@@ -65,6 +78,7 @@ export function useGameEngine() {
   }
 
   return {
+    isLoadingQuestions,
     startGame,
     submitAnswer,
     goNext,

@@ -18,6 +18,11 @@ const router = createRouter({
       name: 'result',
       component: () => import('@/components/ResultScreen.vue'),
     },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: () => import('@/components/AdminScreen.vue'),
+    },
   ],
 })
 

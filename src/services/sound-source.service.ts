@@ -1,23 +1,41 @@
 /**
- * 音频获取服务
- * VITE_FREESOUND_TOKEN — Freesound API Key（在 https://freesound.org/apiv2/apply/ 获取）
- * Fallback：Web Audio 合成器
+ * 音频获取服务 — 三级 fallback
+ * L1: Supabase Storage → L2: Freesound API → L3: Web Audio 合成器
  */
 
 import type { Question, SynthPreset } from '@/data/types'
 import { getItem, setItem } from '@/utils/storage'
+import { getStorageUrl, SOUNDS_BASE_URL } from './supabase.client'
+import { getQuestionPaths } from './questions.service'
 
 const FREESOUND_TOKEN = import.meta.env.VITE_FREESOUND_TOKEN as string | undefined
 
+/** 缓存版本标识，环境变量变更时缓存自动失效 */
+const CACHE_VERSION = SOUNDS_BASE_URL ? 'cdn' : 'sb'
+
 /** 获取题目的声音 URL（null → 合成器） */
 export async function getSoundUrl(question: Question): Promise<string | null> {
-  const cacheKey = `sound-${question.id}`
+  const cacheKey = `sound-v3-${CACHE_VERSION}-${question.id}`
 
-  // 1. 查缓存
+  // 0. 查 localStorage 缓存
   const cached = getItem<string | null>(cacheKey, null)
   if (cached) return cached
 
-  // 2. Freesound 在线搜索
+  // 1. Supabase Storage（主源）
+  try {
+    const { soundPath } = await getQuestionPaths(question.id)
+    if (soundPath) {
+      const url = getStorageUrl('sounds', soundPath)
+      if (url) {
+        setItem(cacheKey, url)
+        return url
+      }
+    }
+  } catch {
+    // 降级到下一级
+  }
+
+  // 2. Freesound 在线搜索（降级）
   if (FREESOUND_TOKEN) {
     const keywords = [
       question.nameEn,

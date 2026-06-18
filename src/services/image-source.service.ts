@@ -1,25 +1,44 @@
 /**
- * 图片获取服务
- * 三级 fallback：本地 SVG → Pexels API → Unsplash/Openverse
- * 默认使用本地卡通 SVG，.env 中填入 VITE_PEXELS_KEY 后启用在线搜索
+ * 图片获取服务 — 三级 fallback
+ * L1: Supabase Storage → L2: Pexels API → L3: 本地 SVG
  */
 
 import type { Question } from '@/data/types'
 import { getItem, setItem } from '@/utils/storage'
+import { getStorageUrl, IMAGES_BASE_URL } from './supabase.client'
+import { getQuestionPaths } from './questions.service'
 
 const PEXELS_KEY = import.meta.env.VITE_PEXELS_KEY as string | undefined
 
 /** 图片加载状态 */
 export type ImageStatus = 'loading' | 'ok' | 'error'
 
+/** 缓存版本标识，环境变量变更时缓存自动失效 */
+const CACHE_VERSION = IMAGES_BASE_URL ? 'cdn' : 'sb'
+
 /** 获取题目的图片 URL */
 export async function getImageUrl(question: Question): Promise<string> {
-  // 1. 查缓存
-  const cacheKey = `img-${question.id}`
+  const cacheKey = `img-v3-${CACHE_VERSION}-${question.id}`
+
+  // 0. 查 localStorage 缓存
   const cached = getItem<string | null>(cacheKey, null)
   if (cached) return cached
 
-  // 2. 尝试在线 API
+  // 1. Supabase Storage（主源）
+  try {
+    const { imagePath } = await getQuestionPaths(question.id)
+    if (imagePath) {
+      const url = getStorageUrl('images', imagePath)
+      if (url) {
+        setItem(cacheKey, url)
+        return url
+      }
+    }
+  } catch {
+    // 降级到下一级
+  }
+
+  // 2. Pexels API（降级）
   if (PEXELS_KEY) {
     try {
       const url = await searchPexels(question.imageKeywords[0])
@@ -32,9 +51,8 @@ export async function getImageUrl(question: Question): Promise<string> {
     }
   }
 
-  // 3. 返回本地 SVG 占位图路径
-  const fallback = getFallbackImage(question)
-  return fallback
+  // 3. 本地 SVG 占位图
+  return getFallbackImage(question)
 }
 
 /** 获取兜底图片 */

@@ -1,11 +1,20 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useGameStore } from '@/stores/game.store'
+import { fetchCategories } from '@/services/categories.service'
 import { CATEGORIES } from '@/data/categories'
 import BaseButton from '@/components/common/BaseButton.vue'
+import type { Category, CategoryId } from '@/data/types'
 
 const store = useGameStore()
 
-function selectCategory(catId: 'vehicle' | 'animal') {
+// 分类数据：优先从 Supabase 获取，降级到本地
+const categories = ref<Category[]>(CATEGORIES)
+onMounted(async () => {
+  categories.value = await fetchCategories()
+})
+
+function selectCategory(catId: CategoryId) {
   store.selectCategory(catId)
 }
 
@@ -27,7 +36,7 @@ function start() {
       <p class="section-hint">👇 选择一个类别开始游戏吧！</p>
       <div class="category-cards">
         <button
-          v-for="cat in CATEGORIES"
+          v-for="cat in categories"
           :key="cat.id"
           :class="['category-card', { selected: store.category === cat.id }]"
           :style="{ '--cat-color': cat.color }"
@@ -54,6 +63,8 @@ function start() {
     <div v-if="store.bestScore > 0" class="best-score">
       🏆 最高记录：{{ store.bestScore }} 分
     </div>
+
+    <router-link to="/admin" class="admin-link">🔧 资源管理</router-link>
   </div>
 </template>
 
@@ -173,4 +184,13 @@ function start() {
   font-weight: 700;
   color: #FFB74D;
 }
+
+.admin-link {
+  font-size: 14px;
+  color: #bbb;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.admin-link:hover { color: #999; }
 </style>
