@@ -1,0 +1,67 @@
+schema_version: 1
+module_path: ""
+title: 儿童声音识别游戏
+scope:
+    - .gitignore
+    - README.md
+    - index.html
+    - package-lock.json
+    - package.json
+    - tsconfig.app.json
+    - tsconfig.json
+    - tsconfig.node.json
+    - vite.config.ts
+    - src/
+    - .env.example
+    - .vscode\extensions.json
+    - public\favicon.svg
+    - public\icons.svg
+    - src\App.vue
+    - src\assets\hero.png
+    - src\assets\placeholders\animal.svg
+    - src\assets\placeholders\vehicle.svg
+    - src\assets\styles\animations.css
+    - src\assets\styles\base.css
+    - src\assets\styles\index.css
+    - src\assets\styles\variables.css
+    - src\assets\vite.svg
+    - src\components\FeedbackModal.vue
+    - src\components\GameHeader.vue
+    - src\components\GameScreen.vue
+    - src\components\HomeScreen.vue
+    - src\components\OptionCard.vue
+    - src\components\OptionsGrid.vue
+    - src\components\ResultScreen.vue
+    - src\components\SoundPlayer.vue
+    - src\components\common\BaseButton.vue
+    - src\components\common\Confetti.vue
+    - src\components\common\IconButton.vue
+    - src\components\common\ProgressBar.vue
+    - src\components\common\SkeletonCard.vue
+    - src\components\common\StarBurst.vue
+    - src\composables\useAudio.ts
+    - src\composables\useConfetti.ts
+    - src\composables\useEncouragement.ts
+    - src\composables\useGameEngine.ts
+    - src\composables\useImage.ts
+    - src\composables\useQuestion.ts
+    - src\composables\useSpeech.ts
+    - src\data\categories.ts
+    - src\data\encouragements.ts
+    - src\data\questions.ts
+    - src\data\types.ts
+    - src\main.ts
+    - src\router\index.ts
+    - src\services\audio-player.ts
+    - src\services\feedback-sfx.service.ts
+    - src\services\image-source.service.ts
+    - src\services\sound-source.service.ts
+    - src\stores\game.store.ts
+    - src\utils\array.ts
+    - src\utils\random.ts
+    - src\utils\sound-synth.ts
+    - src\utils\storage.ts
+    - src\vite-env.d.ts
+source_files: []
+depends_on: []
+related_to: []
