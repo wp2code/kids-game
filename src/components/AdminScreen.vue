@@ -236,16 +236,6 @@ const editSoundKeywordsInput = ref('')
 const editImageKeywordsInput = ref('')
 const editFormErrors = ref<Record<string, string>>({})
 
-/** 资源状态文案 */
-function statusText(res: QuestionResource): string {
-  return res.is_active ? '启用' : '停用'
-}
-
-/** 资源状态 CSS 类 */
-function statusClass(res: QuestionResource): string {
-  return res.is_active ? 'status-active' : 'status-disabled'
-}
-
 /** 切换启用/停用 */
 async function handleToggleActive(res: QuestionResource) {
   const newActive = !res.is_active

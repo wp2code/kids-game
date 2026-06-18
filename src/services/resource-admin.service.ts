@@ -149,7 +149,7 @@ export async function createQuestion(input: CreateQuestionInput): Promise<Questi
   const { data, error } = await supabase
     .from('questions')
     .insert(row)
-    .select('id, category_id, name, name_en, sound_path, image_path')
+    .select('id, category_id, name, name_en, sound_keywords, image_keywords, difficulty, is_active, sound_path, image_path')
     .single()
 
   if (error || !data) {
@@ -162,6 +162,10 @@ export async function createQuestion(input: CreateQuestionInput): Promise<Questi
     category_id: string
     name: string
     name_en: string
+    sound_keywords: string[]
+    image_keywords: string[]
+    difficulty: 1 | 2 | 3
+    is_active: boolean
     sound_path: string | null
     image_path: string | null
   }
@@ -173,6 +177,10 @@ export async function createQuestion(input: CreateQuestionInput): Promise<Questi
     category_id: d.category_id,
     name: d.name,
     name_en: d.name_en,
+    sound_keywords: d.sound_keywords ?? [],
+    image_keywords: d.image_keywords ?? [],
+    difficulty: d.difficulty,
+    is_active: d.is_active ?? true,
     sound_path: d.sound_path,
     image_path: d.image_path,
     soundUploaded: !!d.sound_path,
